@@ -3,7 +3,7 @@ plugins {
     id 'application'
 }
 
-mainClassName = 'ru.kuuuala.grep.Main'
+mainClassName = 'test.grepgui.Starter'
 group 'ru.kuuuala.ifuture'
 version '1.0-SNAPSHOT'
 
