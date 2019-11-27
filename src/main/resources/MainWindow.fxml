@@ -9,28 +9,29 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fx:id="mainForm" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="345.0" prefWidth="274.0" scaleShape="false" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="test.grepgui.controllers.MainWindowController">
+<VBox fx:id="mainForm" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" scaleShape="false" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="test.grepgui.controllers.MainWindowController">
    <children>
-      <VBox prefHeight="47.0" prefWidth="264.0">
+      <VBox>
          <children>
-            <Label prefHeight="16.0" prefWidth="172.0" text="Search directory:">
+            <Label text="Search directory:">
                <VBox.margin>
                   <Insets />
                </VBox.margin>
             </Label>
-            <HBox prefHeight="27.0" prefWidth="264.0">
+            <HBox>
                <children>
-                  <TextField fx:id="locationText" prefHeight="26.0" prefWidth="193.0">
+                  <TextField fx:id="locationText">
                      <HBox.margin>
                         <Insets />
                      </HBox.margin>
                   </TextField>
-                  <Button fx:id="browseButton" mnemonicParsing="false" onAction="#browseButtonClick" text="Browse">
+                  <Region prefWidth="10.0" HBox.hgrow="ALWAYS" />
+                  <Button mnemonicParsing="false" onAction="#browseButtonClick" text="Browse">
                      <opaqueInsets>
                         <Insets left="10.0" />
                      </opaqueInsets>
                      <HBox.margin>
-                        <Insets left="5.0" />
+                        <Insets />
                      </HBox.margin>
                   </Button>
                </children>
@@ -46,7 +47,7 @@
             <Insets left="5.0" right="5.0" top="5.0" />
          </VBox.margin>
       </VBox>
-      <VBox prefHeight="200.0" prefWidth="100.0">
+      <VBox>
          <children>
             <Label text="Search text:">
                <VBox.margin>
@@ -63,7 +64,7 @@
             <Insets left="5.0" right="5.0" top="5.0" />
          </VBox.margin>
       </VBox>
-      <VBox prefHeight="47.0" prefWidth="264.0">
+      <VBox>
          <children>
             <Label text="File extension:" />
             <TextField fx:id="extensionText">
@@ -76,14 +77,14 @@
             <Insets left="5.0" right="5.0" top="5.0" />
          </VBox.margin>
       </VBox>
-      <HBox alignment="CENTER_RIGHT" prefHeight="27.0" prefWidth="274.0">
+      <HBox alignment="CENTER_RIGHT">
          <children>
-            <Button fx:id="clearButton" mnemonicParsing="false" onAction="#clearButtonClick" text="Clear">
+            <Button mnemonicParsing="false" onAction="#clearButtonClick" text="Clear">
                <HBox.margin>
                   <Insets />
                </HBox.margin></Button>
             <Region HBox.hgrow="ALWAYS" />
-            <Button fx:id="searchButton" mnemonicParsing="false" onAction="#searchButtonClick" text="Search">
+            <Button mnemonicParsing="false" onAction="#searchButtonClick" text="Search">
                <HBox.margin>
                   <Insets />
                </HBox.margin></Button>
