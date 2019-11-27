@@ -7,17 +7,17 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<SplitPane fx:id="resultWindow" dividerPositions="0.5" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/11.0.1">
+<SplitPane fx:id="resultWindow" dividerPositions="0.5" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="test.grepgui.controllers.ResultWindowController">
   <items>
       <TreeView fx:id="resultTreeView" prefHeight="200.0" prefWidth="200.0" />
       <VBox prefHeight="200.0" prefWidth="100.0">
          <children>
             <TabPane fx:id="resultTabPane" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" />
-            <HBox prefHeight="100.0" prefWidth="200.0">
+            <HBox prefWidth="295.0">
                <children>
                   <Button mnemonicParsing="false" text="Up" />
                   <Button mnemonicParsing="false" text="Down" />
-                  <Button mnemonicParsing="false" text="Copy All" />
+                  <Button mnemonicParsing="false" onAction="#copyAllClickButton" text="Copy All" />
                </children>
             </HBox>
          </children>

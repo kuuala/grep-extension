@@ -9,6 +9,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import test.grepgui.model.Searcher;
 
 import java.io.File;
 
@@ -48,5 +49,9 @@ public class MainWindowController {
         stage.setResizable(false);
         stage.show();
         mainForm.getScene().getWindow().hide();
+        String extensionFieldText = extensionText.getText();
+        String extension = extensionFieldText.length() == 0 ? "log" : extensionFieldText;
+        Searcher searcher = new Searcher(locationText.getText(), searchText.getText(), extension);
+        searcher.doSome();
     }
 }
