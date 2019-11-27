@@ -1,10 +1,14 @@
 package test.grepgui.controllers;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.Stage;
 
 import java.io.File;
 
@@ -36,7 +40,13 @@ public class MainWindowController {
     }
 
     @FXML
-    private void searchButtonClick() {
-
+    private void searchButtonClick() throws Exception {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ResultWindow.fxml"));
+        Parent root = loader.load();
+        Stage stage = new Stage();
+        stage.setScene(new Scene(root));
+        stage.setResizable(false);
+        stage.show();
+        mainForm.getScene().getWindow().hide();
     }
 }
