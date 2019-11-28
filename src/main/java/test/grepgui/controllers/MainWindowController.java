@@ -52,6 +52,6 @@ public class MainWindowController {
         String extensionFieldText = extensionText.getText();
         String extension = extensionFieldText.length() == 0 ? "log" : extensionFieldText;
         Searcher searcher = new Searcher(locationText.getText(), searchText.getText(), extension);
-        searcher.doSome();
+        searcher.doRecurseTraverse();
     }
 }

@@ -24,18 +24,13 @@ public class Searcher {
             if (file.isDirectory()) {
                 traverse(file, text, extension);
             } else if (file.isFile() && FilenameUtils.getExtension(file.getName()).equals(extension)) {
-                System.out.println(file.getAbsolutePath());
-                FileScanner fileScanner = new FileScanner(file);
-                FileStat fileStat = fileScanner.doScan();
-                if (fileStat.getMatch()) {
-                    LazySingleton single = LazySingleton.getInstance();
-                    single.addFileStat(fileStat);
-                }
+                TaskQueue tasks = TaskQueue.getInstance();
+                tasks.addTask(new Task(file, text));
             }
         }
     }
 
-    public void doSome() {
+    public void doRecurseTraverse() {
         File root = new File(path);
         traverse(root, text, extension);
     }
