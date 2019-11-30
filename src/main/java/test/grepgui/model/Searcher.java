@@ -3,17 +3,25 @@ package test.grepgui.model;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
 
 public class Searcher {
 
     final private String path;
     final private String text;
     final private String extension;
+    final private List<FileTask> tasks;
 
     public Searcher(String path, String text, String extension) {
         this.path = path;
         this.text = text;
         this.extension = extension;
+        tasks = new LinkedList<>();
+    }
+
+    private boolean isFileMeet(File file) {
+        return file.isFile() && FilenameUtils.getExtension(file.getName()).equals(extension);
     }
 
     private void traverse(File root, String text, String extension) {
@@ -23,15 +31,15 @@ public class Searcher {
         for (File file: files) {
             if (file.isDirectory()) {
                 traverse(file, text, extension);
-            } else if (file.isFile() && FilenameUtils.getExtension(file.getName()).equals(extension)) {
-                TaskQueue tasks = TaskQueue.getInstance();
-                tasks.addTask(new Task(file, text));
+            } else if (isFileMeet(file)) {
+                tasks.add(new FileTask(file, text));
             }
         }
     }
 
-    public void doRecurseTraverse() {
+    public List<FileTask> getTasks() {
         File root = new File(path);
         traverse(root, text, extension);
+        return tasks;
     }
 }

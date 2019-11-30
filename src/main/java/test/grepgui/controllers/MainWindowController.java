@@ -8,8 +8,8 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
-import test.grepgui.model.Searcher;
 
 import java.io.File;
 
@@ -40,18 +40,25 @@ public class MainWindowController {
         extensionText.clear();
     }
 
+    private String getExtension() {
+        String extensionTextString = extensionText.getText();
+        return extensionTextString.length() == 0 ? "log" : extensionTextString;
+    }
+
     @FXML
     private void searchButtonClick() throws Exception {
+        String extension = getExtension();
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/ResultWindow.fxml"));
+        ResultWindowController controller = new ResultWindowController(locationText.getText(),
+                searchText.getText(), extension);
+        loader.setController(controller);
         Parent root = loader.load();
-        Stage stage = new Stage();
-        stage.setScene(new Scene(root));
-        stage.setResizable(false);
-        stage.show();
-        mainForm.getScene().getWindow().hide();
-        String extensionFieldText = extensionText.getText();
-        String extension = extensionFieldText.length() == 0 ? "log" : extensionFieldText;
-        Searcher searcher = new Searcher(locationText.getText(), searchText.getText(), extension);
-        searcher.doRecurseTraverse();
+        Stage dialog = new Stage();
+        dialog.setScene(new Scene(root));
+        dialog.setResizable(false);
+        dialog.initOwner(mainForm.getScene().getWindow());
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle("Search Result");
+        dialog.showAndWait();
     }
 }
