@@ -32,7 +32,7 @@ public class Searcher {
             if (file.isDirectory()) {
                 traverse(file, text, extension);
             } else if (isFileMeet(file)) {
-                tasks.add(new FileTask(file, text));
+                tasks.add(new FileTask(file.getPath(), text));
             }
         }
     }

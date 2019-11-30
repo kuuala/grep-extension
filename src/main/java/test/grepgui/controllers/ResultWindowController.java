@@ -1,5 +1,6 @@
 package test.grepgui.controllers;
 
+import javafx.collections.ObservableList;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -7,7 +8,6 @@ import javafx.scene.control.*;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.MouseEvent;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import test.grepgui.model.FileResult;
 import test.grepgui.model.FileTask;
@@ -26,9 +26,7 @@ import java.util.concurrent.Executors;
 public class ResultWindowController implements Initializable {
 
     @FXML
-    private SplitPane resultWindow;
-    @FXML
-    private TreeView<String> resultTreeView;
+    private TreeView<FileResult> resultTreeView;
     @FXML
     private TabPane resultTabPane;
 
@@ -42,11 +40,20 @@ public class ResultWindowController implements Initializable {
         this.extension = extension;
     }
 
+    //todo next match
     @FXML
-    private void upClickButton() {}
+    private void upClickButton() {
+        Tab tab = resultTabPane.getSelectionModel().getSelectedItem();
+    }
 
+    //todo previous match
     @FXML
-    private void downClickButton() {}
+    private void downClickButton() {
+        Tab tab = resultTabPane.getSelectionModel().getSelectedItem();
+        if (tab != null) {
+            TextArea textArea = (TextArea) tab.getContent();
+        }
+    }
 
     private void setClipboard(String string) {
         Clipboard clipboard = Clipboard.getSystemClipboard();
@@ -61,20 +68,6 @@ public class ResultWindowController implements Initializable {
         TextArea area =  (TextArea) selectionModel.getSelectedItem().getContent();
         area.selectAll();
         setClipboard(area.getText());
-    }
-
-    private void addElementOnTree(File file) {
-        synchronized (resultTreeView) {
-            if (resultTreeView.getRoot() == null) {
-                resultTreeView.setRoot(new TreeItem<>(FilenameUtils.getName(path)));
-            }
-            TreeItem<String> item = new TreeItem<>(file.getAbsolutePath());
-            resultTreeView.getRoot().getChildren().add(item);
-        }
-    }
-
-    private boolean itemIsLeaf(Object item) {
-        return item.getClass() == TreeItem.class && ((TreeItem) item).getChildren().size() == 0;
     }
 
     private Tab createTab(File file, String content) {
@@ -93,13 +86,13 @@ public class ResultWindowController implements Initializable {
         selectionModel.select(tab);
     }
 
+    //todo select 0 match
     @FXML
     private void treeViewMouseClick(MouseEvent event) {
         if (event.getClickCount() == 2) {
             Object selectedItem = resultTreeView.getSelectionModel().getSelectedItem();
-            if (itemIsLeaf(selectedItem)) {
-                TreeItem<String> item = (TreeItem) selectedItem;
-                File file = new File(item.getValue());
+            if (selectedItem.getClass() == TreeItem.class && ((TreeItem) selectedItem).isLeaf()) {
+                File file = new File(((TreeItem<FileResult>) selectedItem).getValue().getPath());
                 StringBuilder content = new StringBuilder();
                 try (FileInputStream inputStream = new FileInputStream(file)) {
                     content.append(IOUtils.toString(inputStream, StandardCharsets.UTF_8));
@@ -112,23 +105,54 @@ public class ResultWindowController implements Initializable {
         }
     }
 
+    private void addElementOnTree(FileResult result) {
+        synchronized(resultTreeView) {
+            if (resultTreeView.getRoot() == null) {
+                resultTreeView.setRoot(new TreeItem<>(new FileResult(path, null)));
+            }
+            TreeItem<FileResult> currentItem = resultTreeView.getRoot();
+            String lessPath = result.getPath().substring(path.length() + 1);
+            String[] split = lessPath.split(File.separator);
+            for (String elem: split) {
+                ObservableList<TreeItem<FileResult>> kids = currentItem.getChildren();
+                ObservableList<TreeItem<FileResult>> root = kids.filtered(x -> x.getValue().getFileName().equals(elem));
+                if (root.size() == 0) {
+                    TreeItem<FileResult> item = new TreeItem<FileResult>(result);
+                    kids.add(item);
+                    currentItem = item;
+                } else {
+                    currentItem = root.get(0);
+                }
+            }
+        }
+    }
+
     private void runTasks(List<FileTask> tasks) {
-        ExecutorService service = Executors.newFixedThreadPool(4);
+        ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
         for (FileTask task: tasks) {
             task.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED,
                     workerStateEvent -> {
                         Optional<FileResult> result = task.getValue();
-                        result.ifPresent(x -> addElementOnTree(x.getFile()));
+                        result.ifPresent(this::addElementOnTree);
                     });
             service.submit(task);
         }
         service.shutdown();
     }
 
-    @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
+    //todo replace searcher to synchronized query of tasks
+    private void delegateSolving() {
         Searcher searcher = new Searcher(path, text, extension);
         List<FileTask> tasks = searcher.getTasks();
         runTasks(tasks);
+    }
+
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        if (text.isEmpty())
+            return;
+        Runnable solver = this::delegateSolving;
+        Thread thread = new Thread(solver);
+        thread.start();
     }
 }

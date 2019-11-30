@@ -12,11 +12,12 @@ import java.util.List;
 import java.util.Optional;
 
 public class FileTask extends Task<Optional<FileResult>> {
-    final private File file;
+
+    final private String path;
     final private String text;
 
-    FileTask(File file, String text) {
-        this.file = file;
+    FileTask(String path, String text) {
+        this.path = path;
         this.text = text;
     }
 
@@ -32,7 +33,7 @@ public class FileTask extends Task<Optional<FileResult>> {
 
     private String getFileContent() {
         StringBuilder builder = new StringBuilder();
-        try (FileInputStream inputStream = new FileInputStream(file)) {
+        try (FileInputStream inputStream = new FileInputStream(new File(path))) {
             builder.append(IOUtils.toString(inputStream, StandardCharsets.UTF_8));
         } catch (IOException e) {
             e.printStackTrace();
@@ -44,6 +45,6 @@ public class FileTask extends Task<Optional<FileResult>> {
     protected Optional<FileResult> call() {
         String content = getFileContent();
         List<Integer> matches = getIndexOfAllMatches(content);
-        return matches.isEmpty() ? Optional.empty() : Optional.of(new FileResult(file, matches));
+        return matches.isEmpty() ? Optional.empty() : Optional.of(new FileResult(path, matches));
     }
 }
