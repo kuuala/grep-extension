@@ -45,20 +45,24 @@ public class MainWindowController {
         return extensionTextString.length() == 0 ? "log" : extensionTextString;
     }
 
+    private void showAndWaitResultModalWindow(Parent parent) {
+        Stage dialog = new Stage();
+        dialog.setScene(new Scene(parent));
+        dialog.setResizable(false);
+        dialog.setTitle("Search Result");
+        dialog.initOwner(mainForm.getScene().getWindow());
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.showAndWait();
+    }
+
     @FXML
     private void searchButtonClick() throws Exception {
-        String extension = getExtension();
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/ResultWindow.fxml"));
+        String extension = getExtension();
         ResultWindowController controller = new ResultWindowController(locationText.getText(),
                 searchText.getText(), extension);
         loader.setController(controller);
         Parent root = loader.load();
-        Stage dialog = new Stage();
-        dialog.setScene(new Scene(root));
-        dialog.setResizable(false);
-        dialog.initOwner(mainForm.getScene().getWindow());
-        dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.setTitle("Search Result");
-        dialog.showAndWait();
+        showAndWaitResultModalWindow(root);
     }
 }

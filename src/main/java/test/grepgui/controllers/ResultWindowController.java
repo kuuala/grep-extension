@@ -4,6 +4,8 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.MouseEvent;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -46,8 +48,20 @@ public class ResultWindowController implements Initializable {
     @FXML
     private void downClickButton() {}
 
+    private void setClipboard(String string) {
+        Clipboard clipboard = Clipboard.getSystemClipboard();
+        ClipboardContent clipboardContent = new ClipboardContent();
+        clipboardContent.putString(string);
+        clipboard.setContent(clipboardContent);
+    }
+
     @FXML
-    private void copyAllClickButton() {}
+    private void copyAllClickButton() {
+        SingleSelectionModel<Tab> selectionModel =  resultTabPane.getSelectionModel();
+        TextArea area =  (TextArea) selectionModel.getSelectedItem().getContent();
+        area.selectAll();
+        setClipboard(area.getText());
+    }
 
     private void addElementOnTree(File file) {
         synchronized (resultTreeView) {
@@ -59,11 +73,31 @@ public class ResultWindowController implements Initializable {
         }
     }
 
+    private boolean itemIsLeaf(Object item) {
+        return item.getClass() == TreeItem.class && ((TreeItem) item).getChildren().size() == 0;
+    }
+
+    private Tab createTab(File file, String content) {
+        Label tabLabel = new Label(file.getName());
+        TextArea tabText = new TextArea();
+        tabText.appendText(content);
+        Tab tab = new Tab();
+        tab.setContent(tabText);
+        tab.setGraphic(tabLabel);
+        return tab;
+    }
+
+    private void addTabToTabPane(Tab tab) {
+        resultTabPane.getTabs().add(tab);
+        SingleSelectionModel<Tab> selectionModel =  resultTabPane.getSelectionModel();
+        selectionModel.select(tab);
+    }
+
     @FXML
     private void treeViewMouseClick(MouseEvent event) {
         if (event.getClickCount() == 2) {
             Object selectedItem = resultTreeView.getSelectionModel().getSelectedItem();
-            if (selectedItem.getClass() == TreeItem.class && ((TreeItem) selectedItem).getChildren().size() == 0) {
+            if (itemIsLeaf(selectedItem)) {
                 TreeItem<String> item = (TreeItem) selectedItem;
                 File file = new File(item.getValue());
                 StringBuilder content = new StringBuilder();
@@ -72,23 +106,13 @@ public class ResultWindowController implements Initializable {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                Label tabLabel = new Label(file.getName());
-                TextArea tabText = new TextArea();
-                tabText.appendText(content.toString());
-                Tab tab = new Tab();
-                tab.setContent(tabText);
-                tab.setGraphic(tabLabel);
-                resultTabPane.getTabs().add(tab);
-                SingleSelectionModel<Tab> selectionModel =  resultTabPane.getSelectionModel();
-                selectionModel.select(tab);
+                Tab tab = createTab(file, content.toString());
+                addTabToTabPane(tab);
             }
         }
     }
 
-    @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
-        Searcher searcher = new Searcher(path, text, extension);
-        List<FileTask> tasks = searcher.getTasks();
+    private void runTasks(List<FileTask> tasks) {
         ExecutorService service = Executors.newFixedThreadPool(4);
         for (FileTask task: tasks) {
             task.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED,
@@ -99,5 +123,12 @@ public class ResultWindowController implements Initializable {
             service.submit(task);
         }
         service.shutdown();
+    }
+
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        Searcher searcher = new Searcher(path, text, extension);
+        List<FileTask> tasks = searcher.getTasks();
+        runTasks(tasks);
     }
 }
