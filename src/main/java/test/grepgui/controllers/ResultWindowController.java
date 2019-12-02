@@ -49,12 +49,12 @@ public class ResultWindowController implements Initializable {
 
     @FXML
     private void upClickButton() {
-        selectNextText(SearchDirection.UP);
+        selectText(SearchDirection.UP);
     }
 
     @FXML
     private void downClickButton() {
-        selectNextText(SearchDirection.DOWN);
+        selectText(SearchDirection.DOWN);
     }
 
     @FXML
@@ -65,7 +65,6 @@ public class ResultWindowController implements Initializable {
         setClipboard(area.getText());
     }
 
-    //todo select 0 match
     @FXML
     private void treeViewMouseClick(MouseEvent event) {
         if (event.getClickCount() == 2) {
@@ -89,9 +88,7 @@ public class ResultWindowController implements Initializable {
     private void addTabToTabPane(TabWithFileInfo tabWithFileInfo) {
         if (isTabNotOpen(tabWithFileInfo)) {
             tabPane.getTabs().add(tabWithFileInfo);
-            TextArea textArea = (TextArea) tabWithFileInfo.getContent();
-            FileResult fileResult = tabWithFileInfo.getFileResult();
-            textArea.selectRange(fileResult.getStartPosition(), fileResult.getStartPosition() + fileResult.getTextLength());
+            selectText(SearchDirection.START);
         }
         SingleSelectionModel<Tab> selectionModel =  tabPane.getSelectionModel();
         selectionModel.select(tabWithFileInfo);
@@ -140,16 +137,26 @@ public class ResultWindowController implements Initializable {
     }
 
     private enum SearchDirection {
-        UP, DOWN
+        START, UP, DOWN
     }
 
-    private void selectNextText(SearchDirection searchDirection) {
+    private int getCurrentPosition(FileResult fileResult, SearchDirection searchDirection) {
+        switch (searchDirection) {
+            case UP:
+                return fileResult.getUpPosition();
+            case DOWN:
+                return fileResult.getDownPosition();
+            default:
+                return fileResult.getStartPosition();
+        }
+    }
+
+    private void selectText(SearchDirection searchDirection) {
         TabWithFileInfo tab = (TabWithFileInfo) tabPane.getSelectionModel().getSelectedItem();
         if (tab != null) {
             TextArea textArea = (TextArea) tab.getContent();
             FileResult fileResult = tab.getFileResult();
-            int currentPosition = searchDirection.equals(SearchDirection.UP) ?
-                    fileResult.getUpPosition() : fileResult.getDownPosition();
+            int currentPosition = getCurrentPosition(fileResult, searchDirection);
             textArea.selectRange(currentPosition, currentPosition + fileResult.getTextLength());
         }
     }
