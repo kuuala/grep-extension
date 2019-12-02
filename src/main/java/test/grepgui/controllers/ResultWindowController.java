@@ -8,15 +8,13 @@ import javafx.scene.control.*;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.MouseEvent;
-import org.apache.commons.io.IOUtils;
 import test.grepgui.model.FileResult;
 import test.grepgui.model.FileTask;
 import test.grepgui.model.Searcher;
+import test.grepgui.model.TabWithFileInfo;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -40,26 +38,23 @@ public class ResultWindowController implements Initializable {
         this.extension = extension;
     }
 
-    //todo next match
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        if (text.isEmpty())
+            return;
+        Runnable solver = this::delegateSolving;
+        Thread thread = new Thread(solver);
+        thread.start();
+    }
+
     @FXML
     private void upClickButton() {
-        Tab tab = tabPane.getSelectionModel().getSelectedItem();
+        selectNextText(SearchDirection.UP);
     }
 
-    //todo previous match
     @FXML
     private void downClickButton() {
-        Tab tab = tabPane.getSelectionModel().getSelectedItem();
-        if (tab != null) {
-            TextArea textArea = (TextArea) tab.getContent();
-        }
-    }
-
-    private void setClipboard(String string) {
-        Clipboard clipboard = Clipboard.getSystemClipboard();
-        ClipboardContent clipboardContent = new ClipboardContent();
-        clipboardContent.putString(string);
-        clipboard.setContent(clipboardContent);
+        selectNextText(SearchDirection.DOWN);
     }
 
     @FXML
@@ -70,21 +65,36 @@ public class ResultWindowController implements Initializable {
         setClipboard(area.getText());
     }
 
-    private Tab createTab(File file, String content) {
-        Label tabLabel = new Label(file.getName());
-        TextArea tabText = new TextArea();
-        tabText.appendText(content);
-        tabText.setEditable(false);
-        Tab tab = new Tab();
-        tab.setContent(tabText);
-        tab.setGraphic(tabLabel);
-        return tab;
+    //todo select 0 match
+    @FXML
+    private void treeViewMouseClick(MouseEvent event) {
+        if (event.getClickCount() == 2) {
+            TreeItem<FileResult> selectedItem = treeView.getSelectionModel().getSelectedItem();
+            if (selectedItem.getClass() == TreeItem.class && selectedItem.isLeaf()) {
+                TabWithFileInfo tab = new TabWithFileInfo(selectedItem.getValue());
+                addTabToTabPane(tab);
+            }
+        }
     }
 
-    private void addTabToTabPane(Tab tab) {
-        tabPane.getTabs().add(tab);
+    private boolean isTabWithFileInfo(Tab tab) {
+        return tab.getClass() == TabWithFileInfo.class;
+    }
+
+    private boolean isTabNotOpen(TabWithFileInfo tabWithFileInfo) {
+        ObservableList<Tab> tabs = tabPane.getTabs();
+        return tabs.filtered(x -> isTabWithFileInfo(x) && x.equals(tabWithFileInfo)).size() == 0;
+    }
+
+    private void addTabToTabPane(TabWithFileInfo tabWithFileInfo) {
+        if (isTabNotOpen(tabWithFileInfo)) {
+            tabPane.getTabs().add(tabWithFileInfo);
+            TextArea textArea = (TextArea) tabWithFileInfo.getContent();
+            FileResult fileResult = tabWithFileInfo.getFileResult();
+            textArea.selectRange(fileResult.getStartPosition(), fileResult.getStartPosition() + fileResult.getTextLength());
+        }
         SingleSelectionModel<Tab> selectionModel =  tabPane.getSelectionModel();
-        selectionModel.select(tab);
+        selectionModel.select(tabWithFileInfo);
     }
 
     private void runTasks(List<FileTask> tasks) {
@@ -110,7 +120,7 @@ public class ResultWindowController implements Initializable {
     private void addElementOnTree(FileResult result) {
         synchronized (treeView) {
             if (treeView.getRoot() == null) {
-                treeView.setRoot(new TreeItem<>(new FileResult(path, null)));
+                treeView.setRoot(new TreeItem<>(new FileResult(path, null, text.length())));
             }
             TreeItem<FileResult> currentItem = treeView.getRoot();
             String lessPath = result.getPath().substring(path.length() + 1);
@@ -129,31 +139,25 @@ public class ResultWindowController implements Initializable {
         }
     }
 
-    //todo select 0 match
-    @FXML
-    private void treeViewMouseClick(MouseEvent event) {
-        if (event.getClickCount() == 2) {
-            TreeItem<FileResult> selectedItem = treeView.getSelectionModel().getSelectedItem();
-            if (selectedItem.getClass() == TreeItem.class && selectedItem.isLeaf()) {
-                File file = new File(selectedItem.getValue().getPath());
-                StringBuilder content = new StringBuilder();
-                try (FileInputStream inputStream = new FileInputStream(file)) {
-                    content.append(IOUtils.toString(inputStream, StandardCharsets.UTF_8));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                Tab tab = createTab(file, content.toString());
-                addTabToTabPane(tab);
-            }
+    private enum SearchDirection {
+        UP, DOWN
+    }
+
+    private void selectNextText(SearchDirection searchDirection) {
+        TabWithFileInfo tab = (TabWithFileInfo) tabPane.getSelectionModel().getSelectedItem();
+        if (tab != null) {
+            TextArea textArea = (TextArea) tab.getContent();
+            FileResult fileResult = tab.getFileResult();
+            int currentPosition = searchDirection.equals(SearchDirection.UP) ?
+                    fileResult.getUpPosition() : fileResult.getDownPosition();
+            textArea.selectRange(currentPosition, currentPosition + fileResult.getTextLength());
         }
     }
 
-    @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
-        if (text.isEmpty())
-            return;
-        Runnable solver = this::delegateSolving;
-        Thread thread = new Thread(solver);
-        thread.start();
+    private void setClipboard(String string) {
+        Clipboard clipboard = Clipboard.getSystemClipboard();
+        ClipboardContent clipboardContent = new ClipboardContent();
+        clipboardContent.putString(string);
+        clipboard.setContent(clipboardContent);
     }
 }

@@ -7,20 +7,36 @@ public class FileResult {
 
     final private String path;
     final private List<Integer> matchList;
-    private int currentPosition;
+    final private int textLength;
+    private int currentIndex;
 
-    public FileResult(String path, List<Integer> matchList) {
+    public FileResult(String path, List<Integer> matchList, int textLength) {
         this.path = path;
         this.matchList = matchList;
-        currentPosition = 0;
+        this.textLength = textLength;
+        currentIndex = 0;
     }
 
     public String getPath() {
         return path;
     }
 
-    public List<Integer> getMatchList() {
-        return matchList;
+    public int getTextLength() {
+        return textLength;
+    }
+
+    public int getDownPosition() {
+        currentIndex = currentIndex + 1 == matchList.size() ? 0 : currentIndex + 1;
+        return matchList.get(currentIndex);
+    }
+
+    public int getUpPosition() {
+        currentIndex = currentIndex == 0 ? matchList.size() - 1 : currentIndex - 1;
+        return matchList.get(currentIndex);
+    }
+
+    public int getStartPosition() {
+        return matchList.get(0);
     }
 
     public String getFileName() {

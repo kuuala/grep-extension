@@ -45,6 +45,6 @@ public class FileTask extends Task<Optional<FileResult>> {
     protected Optional<FileResult> call() {
         String content = getFileContent();
         List<Integer> matches = getIndexOfAllMatches(content);
-        return matches.isEmpty() ? Optional.empty() : Optional.of(new FileResult(path, matches));
+        return matches.isEmpty() ? Optional.empty() : Optional.of(new FileResult(path, matches, text.length()));
     }
 }
