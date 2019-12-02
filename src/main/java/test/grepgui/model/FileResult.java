@@ -8,7 +8,7 @@ public class FileResult {
     final private String path;
     final private List<Integer> matchList;
     final private int textLength;
-    int currentIndex;
+    protected int currentIndex;
 
     public FileResult(String path, List<Integer> matchList, int textLength) {
         this.path = path;
