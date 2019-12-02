@@ -85,13 +85,18 @@ public class ResultWindowController implements Initializable {
         return tabs.filtered(x -> isTabWithFileInfo(x) && x.equals(tabWithFileInfo)).size() == 0;
     }
 
+    private void selectTab(TabWithFileInfo tabWithFileInfo) {
+        SingleSelectionModel<Tab> selectionModel =  tabPane.getSelectionModel();
+        selectionModel.select(tabWithFileInfo);
+    }
+
     private void addTabToTabPane(TabWithFileInfo tabWithFileInfo) {
         if (isTabNotOpen(tabWithFileInfo)) {
             tabPane.getTabs().add(tabWithFileInfo);
+            selectTab(tabWithFileInfo);
             selectText(SearchDirection.START);
         }
-        SingleSelectionModel<Tab> selectionModel =  tabPane.getSelectionModel();
-        selectionModel.select(tabWithFileInfo);
+        selectTab(tabWithFileInfo);
     }
 
     private void runTasks(List<FileTask> tasks) {
