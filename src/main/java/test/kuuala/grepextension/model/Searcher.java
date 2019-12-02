@@ -3,28 +3,22 @@ package test.kuuala.grepextension.model;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Searcher {
 
     final private String path;
     final private String text;
     final private String extension;
-    final private List<FileTask> tasks;
+    final private TaskQueue tasks;
 
-    public Searcher(String path, String text, String extension) {
+    public Searcher(String path, String text, String extension, TaskQueue tasks) {
         this.path = path;
         this.text = text;
         this.extension = extension;
-        tasks = new ArrayList<>();
+        this.tasks = tasks;
     }
 
-    private boolean isFileMatch(File file) {
-        return file.isFile() && FilenameUtils.getExtension(file.getName()).equals(extension);
-    }
-
-    public List<FileTask> getTasks() {
+    public void fillTaskQueue() {
         File root = new File(path);
         if (root.exists()) {
             if (text.isEmpty()) {
@@ -35,7 +29,10 @@ public class Searcher {
         } else {
             System.err.println(String.format("Directory %s doesn't exists", path));
         }
-        return tasks;
+    }
+
+    private boolean isFileMatch(File file) {
+        return file.isFile() && FilenameUtils.getExtension(file.getName()).equals(extension);
     }
 
     private void traverse(File root, String text) {
@@ -45,7 +42,7 @@ public class Searcher {
                 if (file.isDirectory()) {
                     traverse(file, text);
                 } else if (isFileMatch(file)) {
-                    tasks.add(new FileTask(file.getPath(), text));
+                    tasks.addTask(new FileTask(file.getPath(), text));
                 }
             }
         }

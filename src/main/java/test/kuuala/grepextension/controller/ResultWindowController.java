@@ -11,11 +11,12 @@ import javafx.scene.input.MouseEvent;
 import test.kuuala.grepextension.model.FileResult;
 import test.kuuala.grepextension.model.FileTask;
 import test.kuuala.grepextension.model.Searcher;
+import test.kuuala.grepextension.model.TaskQueue;
 import test.kuuala.grepextension.view.TabWithFileInfo;
 
 import java.io.File;
 import java.net.URL;
-import java.util.List;
+import java.util.LinkedList;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
@@ -99,24 +100,22 @@ public class ResultWindowController implements Initializable {
         selectTab(tabWithFileInfo);
     }
 
-    private void runTasks(List<FileTask> tasks) {
-        ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
-        for (FileTask task: tasks) {
-            task.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED,
-                    workerStateEvent -> {
-                        Optional<FileResult> result = task.getValue();
-                        result.ifPresent(this::addElementOnTree);
-                    });
-            service.submit(task);
-        }
-        service.shutdown();
+    private void solveFileTask(ExecutorService service, FileTask task) {
+        task.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED,
+                workerStateEvent -> {
+                    Optional<FileResult> result = task.getValue();
+                    result.ifPresent(this::addElementOnTree);
+                });
+        service.submit(task);
     }
 
-    //todo replace searcher to synchronized query of tasks
     private void delegateSolving() {
-        Searcher searcher = new Searcher(path, text, extension);
-        List<FileTask> tasks = searcher.getTasks();
-        runTasks(tasks);
+        ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
+        TaskQueue taskQueue = new TaskQueue(new LinkedList<>());
+        taskQueue.registerCallBack((task) -> solveFileTask(service, task));
+        Searcher searcher = new Searcher(path, text, extension, taskQueue);
+        searcher.fillTaskQueue();
+        service.shutdown();
     }
 
     private void addElementOnTree(FileResult result) {
