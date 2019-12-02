@@ -32,7 +32,7 @@ public class TabWithFileInfo extends Tab {
 
     @Override
     public int hashCode() {
-        return file.hashCode() + super.hashCode();
+        return file.hashCode();
     }
 
     @Override
