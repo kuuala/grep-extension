@@ -1,4 +1,4 @@
-package test.grepgui.model;
+package test.kuuala.grepextension.model;
 
 import javafx.concurrent.Task;
 import org.apache.commons.io.IOUtils;
@@ -21,6 +21,13 @@ public class FileTask extends Task<Optional<FileResult>> {
         this.text = text;
     }
 
+    @Override
+    protected Optional<FileResult> call() {
+        String content = getFileContent();
+        List<Integer> matches = getIndexOfAllMatches(content);
+        return matches.isEmpty() ? Optional.empty() : Optional.of(new FileResult(path, matches, text.length()));
+    }
+
     private List<Integer> getIndexOfAllMatches(String string) {
         List<Integer> matches = new LinkedList<>();
         int i = string.indexOf(text);
@@ -39,12 +46,5 @@ public class FileTask extends Task<Optional<FileResult>> {
             e.printStackTrace();
         }
         return builder.toString();
-    }
-
-    @Override
-    protected Optional<FileResult> call() {
-        String content = getFileContent();
-        List<Integer> matches = getIndexOfAllMatches(content);
-        return matches.isEmpty() ? Optional.empty() : Optional.of(new FileResult(path, matches, text.length()));
     }
 }

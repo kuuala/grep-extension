@@ -1,4 +1,4 @@
-package test.grepgui.model;
+package test.kuuala.grepextension.model;
 
 import java.io.File;
 import java.util.List;
@@ -17,7 +17,7 @@ public class FileResult {
         currentIndex = 0;
     }
 
-    void setCurrentIndex(int index) {
+    public void setCurrentIndex(int index) {
         if (0 <= index && index < matchList.size()) {
             currentIndex = index;
         }

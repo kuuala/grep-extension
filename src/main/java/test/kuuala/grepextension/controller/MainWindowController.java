@@ -1,4 +1,4 @@
-package test.grepgui.controllers;
+package test.kuuala.grepextension.controller;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -40,6 +40,17 @@ public class MainWindowController {
         extensionText.clear();
     }
 
+    @FXML
+    private void searchButtonClick() throws Exception {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ResultWindow.fxml"));
+        String extension = getExtension();
+        ResultWindowController controller = new ResultWindowController(locationText.getText(),
+                searchText.getText(), extension);
+        loader.setController(controller);
+        Parent root = loader.load();
+        showAndWaitResultModalWindow(root);
+    }
+
     private String getExtension() {
         String extensionTextString = extensionText.getText();
         return extensionTextString.length() == 0 ? "log" : extensionTextString;
@@ -53,16 +64,5 @@ public class MainWindowController {
         dialog.initOwner(mainForm.getScene().getWindow());
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.showAndWait();
-    }
-
-    @FXML
-    private void searchButtonClick() throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ResultWindow.fxml"));
-        String extension = getExtension();
-        ResultWindowController controller = new ResultWindowController(locationText.getText(),
-                searchText.getText(), extension);
-        loader.setController(controller);
-        Parent root = loader.load();
-        showAndWaitResultModalWindow(root);
     }
 }

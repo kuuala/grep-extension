@@ -1,4 +1,4 @@
-package test.grepgui.controllers;
+package test.kuuala.grepextension.controller;
 
 import javafx.collections.ObservableList;
 import javafx.concurrent.WorkerStateEvent;
@@ -8,10 +8,10 @@ import javafx.scene.control.*;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.MouseEvent;
-import test.grepgui.model.FileResult;
-import test.grepgui.model.FileTask;
-import test.grepgui.model.Searcher;
-import test.grepgui.model.TabWithFileInfo;
+import test.kuuala.grepextension.model.FileResult;
+import test.kuuala.grepextension.model.FileTask;
+import test.kuuala.grepextension.model.Searcher;
+import test.kuuala.grepextension.view.TabWithFileInfo;
 
 import java.io.File;
 import java.net.URL;
@@ -27,7 +27,6 @@ public class ResultWindowController implements Initializable {
     private TreeView<FileResult> treeView;
     @FXML
     private TabPane tabPane;
-
     final private String path;
     final private String text;
     final private String extension;

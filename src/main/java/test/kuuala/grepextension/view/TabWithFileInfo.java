@@ -1,15 +1,17 @@
-package test.grepgui.model;
+package test.kuuala.grepextension.view;
 
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextArea;
 import org.apache.commons.io.IOUtils;
+import test.kuuala.grepextension.model.FileResult;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
 
 public class TabWithFileInfo extends Tab {
+
     private FileResult fileResult;
     private File file;
 
