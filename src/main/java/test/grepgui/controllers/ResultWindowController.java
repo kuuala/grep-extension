@@ -60,16 +60,19 @@ public class ResultWindowController implements Initializable {
     @FXML
     private void copyAllClickButton() {
         SingleSelectionModel<Tab> selectionModel =  tabPane.getSelectionModel();
-        TextArea area =  (TextArea) selectionModel.getSelectedItem().getContent();
-        area.selectAll();
-        setClipboard(area.getText());
+        Tab tab = selectionModel.getSelectedItem();
+        if (tab != null) {
+            TextArea area = (TextArea) tab.getContent();
+            area.selectAll();
+            setClipboard(area.getText());
+        }
     }
 
     @FXML
     private void treeViewMouseClick(MouseEvent event) {
         if (event.getClickCount() == 2) {
             TreeItem<FileResult> selectedItem = treeView.getSelectionModel().getSelectedItem();
-            if (selectedItem.getClass() == TreeItem.class && selectedItem.isLeaf()) {
+            if (selectedItem != null && selectedItem.getClass() == TreeItem.class && selectedItem.isLeaf()) {
                 TabWithFileInfo tab = new TabWithFileInfo(selectedItem.getValue());
                 addTabToTabPane(tab);
             }
