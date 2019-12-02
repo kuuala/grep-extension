@@ -122,11 +122,16 @@ public class ResultWindowController implements Initializable {
             TreeItem<FileResult> currentItem = treeView.getRoot();
             String lessPath = result.getPath().substring(path.length() + 1);
             String[] split = lessPath.split(File.separator);
-            for (String elem: split) {
+            for (int i = 0; i < split.length; ++i) {
                 ObservableList<TreeItem<FileResult>> kids = currentItem.getChildren();
-                ObservableList<TreeItem<FileResult>> root = kids.filtered(x -> x.getValue().getFileName().equals(elem));
+                ObservableList<TreeItem<FileResult>> root = kids.filtered(x -> x.getValue().getFileName().equals(split[i]));
                 if (root.size() == 0) {
-                    TreeItem<FileResult> item = new TreeItem<>(result);
+                    TreeItem<FileResult> item;
+                    if (i == split.length - 1) {
+                        item = new TreeItem<>(result);
+                    } else {
+                        item = new TreeItem<>(new FileResult(split[i], null, 0));
+                    }
                     kids.add(item);
                     currentItem = item;
                 } else {
