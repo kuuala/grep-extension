@@ -36,6 +36,9 @@ public class TabWithFileInfo extends Tab {
 
     @Override
     public boolean equals(Object labelWithFileInfo) {
+        if (this == labelWithFileInfo) {
+            return true;
+        }
         if (labelWithFileInfo != null && labelWithFileInfo.getClass() == TabWithFileInfo.class) {
             return file.equals(((TabWithFileInfo)labelWithFileInfo).file);
         }
