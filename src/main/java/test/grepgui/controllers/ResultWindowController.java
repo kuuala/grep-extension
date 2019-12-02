@@ -26,9 +26,9 @@ import java.util.concurrent.Executors;
 public class ResultWindowController implements Initializable {
 
     @FXML
-    private TreeView<FileResult> resultTreeView;
+    private TreeView<FileResult> treeView;
     @FXML
-    private TabPane resultTabPane;
+    private TabPane tabPane;
 
     final private String path;
     final private String text;
@@ -43,13 +43,13 @@ public class ResultWindowController implements Initializable {
     //todo next match
     @FXML
     private void upClickButton() {
-        Tab tab = resultTabPane.getSelectionModel().getSelectedItem();
+        Tab tab = tabPane.getSelectionModel().getSelectedItem();
     }
 
     //todo previous match
     @FXML
     private void downClickButton() {
-        Tab tab = resultTabPane.getSelectionModel().getSelectedItem();
+        Tab tab = tabPane.getSelectionModel().getSelectedItem();
         if (tab != null) {
             TextArea textArea = (TextArea) tab.getContent();
         }
@@ -64,7 +64,7 @@ public class ResultWindowController implements Initializable {
 
     @FXML
     private void copyAllClickButton() {
-        SingleSelectionModel<Tab> selectionModel =  resultTabPane.getSelectionModel();
+        SingleSelectionModel<Tab> selectionModel =  tabPane.getSelectionModel();
         TextArea area =  (TextArea) selectionModel.getSelectedItem().getContent();
         area.selectAll();
         setClipboard(area.getText());
@@ -74,6 +74,7 @@ public class ResultWindowController implements Initializable {
         Label tabLabel = new Label(file.getName());
         TextArea tabText = new TextArea();
         tabText.appendText(content);
+        tabText.setEditable(false);
         Tab tab = new Tab();
         tab.setContent(tabText);
         tab.setGraphic(tabLabel);
@@ -81,50 +82,9 @@ public class ResultWindowController implements Initializable {
     }
 
     private void addTabToTabPane(Tab tab) {
-        resultTabPane.getTabs().add(tab);
-        SingleSelectionModel<Tab> selectionModel =  resultTabPane.getSelectionModel();
+        tabPane.getTabs().add(tab);
+        SingleSelectionModel<Tab> selectionModel =  tabPane.getSelectionModel();
         selectionModel.select(tab);
-    }
-
-    //todo select 0 match
-    @FXML
-    private void treeViewMouseClick(MouseEvent event) {
-        if (event.getClickCount() == 2) {
-            Object selectedItem = resultTreeView.getSelectionModel().getSelectedItem();
-            if (selectedItem.getClass() == TreeItem.class && ((TreeItem) selectedItem).isLeaf()) {
-                File file = new File(((TreeItem<FileResult>) selectedItem).getValue().getPath());
-                StringBuilder content = new StringBuilder();
-                try (FileInputStream inputStream = new FileInputStream(file)) {
-                    content.append(IOUtils.toString(inputStream, StandardCharsets.UTF_8));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                Tab tab = createTab(file, content.toString());
-                addTabToTabPane(tab);
-            }
-        }
-    }
-
-    private void addElementOnTree(FileResult result) {
-        synchronized(resultTreeView) {
-            if (resultTreeView.getRoot() == null) {
-                resultTreeView.setRoot(new TreeItem<>(new FileResult(path, null)));
-            }
-            TreeItem<FileResult> currentItem = resultTreeView.getRoot();
-            String lessPath = result.getPath().substring(path.length() + 1);
-            String[] split = lessPath.split(File.separator);
-            for (String elem: split) {
-                ObservableList<TreeItem<FileResult>> kids = currentItem.getChildren();
-                ObservableList<TreeItem<FileResult>> root = kids.filtered(x -> x.getValue().getFileName().equals(elem));
-                if (root.size() == 0) {
-                    TreeItem<FileResult> item = new TreeItem<FileResult>(result);
-                    kids.add(item);
-                    currentItem = item;
-                } else {
-                    currentItem = root.get(0);
-                }
-            }
-        }
     }
 
     private void runTasks(List<FileTask> tasks) {
@@ -145,6 +105,47 @@ public class ResultWindowController implements Initializable {
         Searcher searcher = new Searcher(path, text, extension);
         List<FileTask> tasks = searcher.getTasks();
         runTasks(tasks);
+    }
+
+    private void addElementOnTree(FileResult result) {
+        synchronized (treeView) {
+            if (treeView.getRoot() == null) {
+                treeView.setRoot(new TreeItem<>(new FileResult(path, null)));
+            }
+            TreeItem<FileResult> currentItem = treeView.getRoot();
+            String lessPath = result.getPath().substring(path.length() + 1);
+            String[] split = lessPath.split(File.separator);
+            for (String elem: split) {
+                ObservableList<TreeItem<FileResult>> kids = currentItem.getChildren();
+                ObservableList<TreeItem<FileResult>> root = kids.filtered(x -> x.getValue().getFileName().equals(elem));
+                if (root.size() == 0) {
+                    TreeItem<FileResult> item = new TreeItem<>(result);
+                    kids.add(item);
+                    currentItem = item;
+                } else {
+                    currentItem = root.get(0);
+                }
+            }
+        }
+    }
+
+    //todo select 0 match
+    @FXML
+    private void treeViewMouseClick(MouseEvent event) {
+        if (event.getClickCount() == 2) {
+            TreeItem<FileResult> selectedItem = treeView.getSelectionModel().getSelectedItem();
+            if (selectedItem.getClass() == TreeItem.class && selectedItem.isLeaf()) {
+                File file = new File(selectedItem.getValue().getPath());
+                StringBuilder content = new StringBuilder();
+                try (FileInputStream inputStream = new FileInputStream(file)) {
+                    content.append(IOUtils.toString(inputStream, StandardCharsets.UTF_8));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                Tab tab = createTab(file, content.toString());
+                addTabToTabPane(tab);
+            }
+        }
     }
 
     @Override
