@@ -24,13 +24,11 @@ public class Searcher {
         return file.isFile() && FilenameUtils.getExtension(file.getName()).equals(extension);
     }
 
-    private void traverse(File root, String text, String extension) {
+    private void traverse(File root, String text) {
         File[] files = root.listFiles();
-        if (files == null)
-            return;
         for (File file: files) {
             if (file.isDirectory()) {
-                traverse(file, text, extension);
+                traverse(file, text);
             } else if (isFileMeet(file)) {
                 tasks.add(new FileTask(file.getPath(), text));
             }
@@ -39,7 +37,15 @@ public class Searcher {
 
     public List<FileTask> getTasks() {
         File root = new File(path);
-        traverse(root, text, extension);
+        if (root.exists()) {
+            if (text.isEmpty()) {
+                System.err.println("Search text is empty");
+            } else {
+                traverse(root, text);
+            }
+        } else {
+            System.err.println(String.format("Directory %s doesn't exists", path));
+        }
         return tasks;
     }
 }

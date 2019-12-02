@@ -40,8 +40,6 @@ public class ResultWindowController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        if (text.isEmpty())
-            return;
         Runnable solver = this::delegateSolving;
         Thread thread = new Thread(solver);
         thread.start();
