@@ -124,7 +124,8 @@ public class ResultWindowController implements Initializable {
             String[] split = lessPath.split(File.separator);
             for (int i = 0; i < split.length; ++i) {
                 ObservableList<TreeItem<FileResult>> kids = currentItem.getChildren();
-                ObservableList<TreeItem<FileResult>> root = kids.filtered(x -> x.getValue().getFileName().equals(split[i]));
+                int finalI = i;
+                ObservableList<TreeItem<FileResult>> root = kids.filtered(x -> x.getValue().getFileName().equals(split[finalI]));
                 if (root.size() == 0) {
                     TreeItem<FileResult> item;
                     if (i == split.length - 1) {
