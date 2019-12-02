@@ -8,13 +8,19 @@ public class FileResult {
     final private String path;
     final private List<Integer> matchList;
     final private int textLength;
-    protected int currentIndex;
+    private int currentIndex;
 
     public FileResult(String path, List<Integer> matchList, int textLength) {
         this.path = path;
         this.matchList = matchList;
         this.textLength = textLength;
         currentIndex = 0;
+    }
+
+    void setCurrentIndex(int index) {
+        if (0 <= index && index < matchList.size()) {
+            currentIndex = index;
+        }
     }
 
     public String getPath() {

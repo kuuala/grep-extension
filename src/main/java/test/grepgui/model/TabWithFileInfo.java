@@ -27,7 +27,7 @@ public class TabWithFileInfo extends Tab {
         tabText.setEditable(false);
         setContent(tabText);
         setGraphic(new Label(file.getAbsolutePath()));
-        this.setOnClosed((event -> fileResult.currentIndex = 0));
+        this.setOnClosed((event -> fileResult.setCurrentIndex(0)));
     }
 
     @Override
