@@ -38,12 +38,15 @@ public class TabWithFileInfo extends Tab {
     }
 
     @Override
-    public boolean equals(Object labelWithFileInfo) {
-        if (this == labelWithFileInfo) {
+    public boolean equals(Object tabWithFileInfo) {
+        if (this == tabWithFileInfo) {
             return true;
         }
-        if (labelWithFileInfo != null && labelWithFileInfo.getClass() == TabWithFileInfo.class) {
-            return file.equals(((TabWithFileInfo)labelWithFileInfo).file);
+        if (tabWithFileInfo == null) {
+            return false;
+        }
+        if (tabWithFileInfo instanceof TabWithFileInfo) {
+            return file.equals(((TabWithFileInfo)tabWithFileInfo).file);
         }
         return false;
     }
