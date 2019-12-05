@@ -16,8 +16,6 @@ gradle.properties
 .navigation
 /captures
 *.iml
-gradlew
-gradlew.bat
 gradle-app.setting
 .gradletasknamecache
 **/build/
