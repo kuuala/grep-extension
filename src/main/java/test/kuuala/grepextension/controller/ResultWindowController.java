@@ -70,20 +70,16 @@ public class ResultWindowController implements Initializable {
     private void treeViewMouseClick(MouseEvent event) {
         if (event.getClickCount() == 2) {
             TreeItem<FileResult> selectedItem = treeView.getSelectionModel().getSelectedItem();
-            if (selectedItem != null && selectedItem.getClass() == TreeItem.class && selectedItem.isLeaf()) {
+            if (selectedItem != null && selectedItem.isLeaf()) {
                 TabWithFileInfo tab = new TabWithFileInfo(selectedItem.getValue());
                 addTabToTabPane(tab);
             }
         }
     }
 
-    private boolean isTabWithFileInfo(Tab tab) {
-        return tab.getClass() == TabWithFileInfo.class;
-    }
-
     private boolean isTabNotOpen(TabWithFileInfo tabWithFileInfo) {
         ObservableList<Tab> tabs = tabPane.getTabs();
-        return tabs.filtered(x -> isTabWithFileInfo(x) && x.equals(tabWithFileInfo)).size() == 0;
+        return tabs.filtered(x -> x instanceof TabWithFileInfo && x.equals(tabWithFileInfo)).size() == 0;
     }
 
     private void selectTab(TabWithFileInfo tabWithFileInfo) {
