@@ -14,7 +14,7 @@
                   <Region HBox.hgrow="ALWAYS" />
                   <Button mnemonicParsing="false" onAction="#downClickButton" text="Down" />
                   <Region HBox.hgrow="ALWAYS" />
-                  <Button mnemonicParsing="false" onAction="#copyAllClickButton" text="Copy All" />
+                  <Button mnemonicParsing="false" onAction="#selectAllClickButton" text="Select All" />
                </children>
             </HBox>
          </children>

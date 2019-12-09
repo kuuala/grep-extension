@@ -12,8 +12,8 @@ import java.nio.charset.StandardCharsets;
 
 public class TabWithFileInfo extends Tab {
 
-    private FileResult fileResult;
-    private File file;
+    final private FileResult fileResult;
+    final private File file;
 
     public TabWithFileInfo(FileResult fileResult) {
         this.fileResult = fileResult;

@@ -21,7 +21,7 @@ public class Searcher {
     public void fillTaskQueue() {
         File root = new File(path);
         if (root.exists()) {
-            if (text.isEmpty()) {
+            if (text.isBlank()) {
                 System.err.println("Search text is empty");
             } else {
                 traverse(root, text);

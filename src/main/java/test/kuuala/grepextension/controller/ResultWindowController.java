@@ -16,7 +16,6 @@ import test.kuuala.grepextension.view.TabWithFileInfo;
 
 import java.io.File;
 import java.net.URL;
-import java.util.LinkedList;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
@@ -47,19 +46,19 @@ public class ResultWindowController implements Initializable {
 
     @FXML
     private void upClickButton() {
-        selectText(SearchDirection.UP);
+        selectTextByDirection(SearchDirection.UP);
     }
 
     @FXML
     private void downClickButton() {
-        selectText(SearchDirection.DOWN);
+        selectTextByDirection(SearchDirection.DOWN);
     }
 
     @FXML
-    private void copyAllClickButton() {
+    private void selectAllClickButton() {
         SingleSelectionModel<Tab> selectionModel =  tabPane.getSelectionModel();
         Tab tab = selectionModel.getSelectedItem();
-        if (tab != null) {
+        if (tab instanceof TabWithFileInfo) {
             TextArea area = (TextArea) tab.getContent();
             area.selectAll();
             setClipboard(area.getText());
@@ -79,7 +78,7 @@ public class ResultWindowController implements Initializable {
 
     private boolean isTabNotOpen(TabWithFileInfo tabWithFileInfo) {
         ObservableList<Tab> tabs = tabPane.getTabs();
-        return tabs.filtered(x -> x instanceof TabWithFileInfo && x.equals(tabWithFileInfo)).size() == 0;
+        return tabs.filtered(tabWithFileInfo::equals).isEmpty();
     }
 
     private void selectTab(TabWithFileInfo tabWithFileInfo) {
@@ -91,9 +90,10 @@ public class ResultWindowController implements Initializable {
         if (isTabNotOpen(tabWithFileInfo)) {
             tabPane.getTabs().add(tabWithFileInfo);
             selectTab(tabWithFileInfo);
-            selectText(SearchDirection.START);
+            selectTextByDirection(SearchDirection.START);
+        } else {
+            selectTab(tabWithFileInfo);
         }
-        selectTab(tabWithFileInfo);
     }
 
     private void solveFileTask(ExecutorService service, FileTask task) {
@@ -106,37 +106,57 @@ public class ResultWindowController implements Initializable {
     }
 
     private void delegateSolving() {
-        ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
-        TaskQueue taskQueue = new TaskQueue(new LinkedList<>());
+        ExecutorService service = Executors.newFixedThreadPool(
+                Runtime.getRuntime().availableProcessors() + 1);
+        TaskQueue taskQueue = new TaskQueue();
         taskQueue.registerCallBack((task) -> solveFileTask(service, task));
         Searcher searcher = new Searcher(path, text, extension, taskQueue);
         searcher.fillTaskQueue();
         service.shutdown();
     }
 
-    private void addElementOnTree(FileResult result) {
+    private boolean isIndexOfLastNode(int index, int length) {
+        return index == length - 1;
+    }
+
+    private String[] getPathByDirectoriesArray(FileResult leaf) {
+        return leaf.getPath().substring(path.length() + 1).split(File.separator);
+    }
+
+    private ObservableList<TreeItem<FileResult>> getNextNodesByDirName(
+            ObservableList<TreeItem<FileResult>> childes,
+            String directoryName
+    ) {
+        return childes.filtered(x -> x.getValue()
+                .getFileName()
+                .equals(directoryName));
+    }
+
+    private FileResult addInterimNode(String name) {
+        return new FileResult(name, null, 0);
+    }
+
+    private void addElementOnTree(FileResult leaf) {
         synchronized (treeView) {
             if (treeView.getRoot() == null) {
-                treeView.setRoot(new TreeItem<>(new FileResult(path, null, text.length())));
+                treeView.setRoot(new TreeItem<>(addInterimNode(path)));
             }
-            TreeItem<FileResult> currentItem = treeView.getRoot();
-            String lessPath = result.getPath().substring(path.length() + 1);
-            String[] split = lessPath.split(File.separator);
-            for (int i = 0; i < split.length; ++i) {
-                ObservableList<TreeItem<FileResult>> kids = currentItem.getChildren();
-                int finalI = i;
-                ObservableList<TreeItem<FileResult>> root = kids.filtered(x -> x.getValue().getFileName().equals(split[finalI]));
-                if (root.size() == 0) {
-                    TreeItem<FileResult> item;
-                    if (i == split.length - 1) {
-                        item = new TreeItem<>(result);
+            TreeItem<FileResult> currentNode = treeView.getRoot();
+            String[] pathByDirectories = getPathByDirectoriesArray(leaf);
+            for (int i = 0; i < pathByDirectories.length; ++i) {
+                var childes = currentNode.getChildren();
+                var nextNodes = getNextNodesByDirName(childes, pathByDirectories[i]);
+                if (nextNodes.isEmpty()) {
+                    TreeItem<FileResult> tempNode;
+                    if (isIndexOfLastNode(i, pathByDirectories.length)) {
+                        tempNode = new TreeItem<>(leaf);
                     } else {
-                        item = new TreeItem<>(new FileResult(split[i], null, 0));
+                        tempNode = new TreeItem<>(addInterimNode(pathByDirectories[i]));
                     }
-                    kids.add(item);
-                    currentItem = item;
+                    childes.add(tempNode);
+                    currentNode = tempNode;
                 } else {
-                    currentItem = root.get(0);
+                    currentNode = nextNodes.get(0);
                 }
             }
         }
@@ -146,24 +166,27 @@ public class ResultWindowController implements Initializable {
         START, UP, DOWN
     }
 
-    private int getCurrentPosition(FileResult fileResult, SearchDirection searchDirection) {
+    private void setNextPositionByDirection(FileResult fileResult, SearchDirection searchDirection) {
         switch (searchDirection) {
             case UP:
-                return fileResult.getUpPosition();
+                fileResult.setUpPosition();
+                break;
             case DOWN:
-                return fileResult.getDownPosition();
+                fileResult.setDownPosition();
+                break;
             default:
-                return fileResult.getStartPosition();
+                fileResult.setStartPosition();
+                break;
         }
     }
 
-    private void selectText(SearchDirection searchDirection) {
+    private void selectTextByDirection(SearchDirection searchDirection) {
         TabWithFileInfo tab = (TabWithFileInfo) tabPane.getSelectionModel().getSelectedItem();
         if (tab != null) {
             TextArea textArea = (TextArea) tab.getContent();
             FileResult fileResult = tab.getFileResult();
-            int currentPosition = getCurrentPosition(fileResult, searchDirection);
-            textArea.selectRange(currentPosition, currentPosition + fileResult.getTextLength());
+            setNextPositionByDirection(fileResult, searchDirection);
+            textArea.selectRange(fileResult.getStartPosition(), fileResult.getEndPosition());
         }
     }
 

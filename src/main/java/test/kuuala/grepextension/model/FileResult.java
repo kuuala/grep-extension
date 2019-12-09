@@ -17,6 +17,11 @@ public class FileResult {
         currentIndex = 0;
     }
 
+    @Override
+    public String toString() {
+        return getFileName();
+    }
+
     public void setCurrentIndex(int index) {
         if (0 <= index && index < matchList.size()) {
             currentIndex = index;
@@ -27,22 +32,16 @@ public class FileResult {
         return path;
     }
 
-    public int getTextLength() {
-        return textLength;
-    }
-
-    public int getDownPosition() {
+    public void setDownPosition() {
         currentIndex = currentIndex + 1 == matchList.size() ? 0 : currentIndex + 1;
-        return matchList.get(currentIndex);
     }
 
-    public int getUpPosition() {
+    public void setUpPosition() {
         currentIndex = currentIndex == 0 ? matchList.size() - 1 : currentIndex - 1;
-        return matchList.get(currentIndex);
     }
 
-    public int getStartPosition() {
-        return matchList.get(0);
+    public void setStartPosition() {
+        currentIndex = 0;
     }
 
     public String getFileName() {
@@ -50,8 +49,11 @@ public class FileResult {
         return splits[splits.length - 1];
     }
 
-    @Override
-    public String toString() {
-        return getFileName();
+    public int getStartPosition() {
+        return matchList.get(currentIndex);
+    }
+
+    public int getEndPosition() {
+        return matchList.get(currentIndex) + textLength;
     }
 }
