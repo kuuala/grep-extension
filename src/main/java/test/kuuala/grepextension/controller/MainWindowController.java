@@ -53,7 +53,11 @@ public class MainWindowController {
 
     private String getExtension() {
         String extensionTextString = extensionText.getText();
-        return extensionTextString.length() == 0 ? "log" : extensionTextString;
+        if (extensionTextString.isBlank()) {
+            return "log";
+        } else {
+            return extensionTextString.substring(extensionTextString.indexOf('.') + 1);
+        }
     }
 
     private void showAndWaitResultModalWindow(Parent parent) {
